@@ -1,0 +1,16 @@
+services:
+  sisreg-bot:
+    build: .
+    ports:
+      - "${PORT}:8080"
+    env_file:
+      - .env
+    volumes:
+      - bot-data:/app/data
+    restart: unless-stopped
+volumes:
+  bot-data:
+networks:
+    default:
+    external: true
+    name: easypanel
