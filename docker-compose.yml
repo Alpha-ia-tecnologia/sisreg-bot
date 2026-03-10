@@ -12,13 +12,15 @@ services:
       - 1.1.1.1
     networks:
       - easypanel
-      - bridge
+      - outbound
     restart: unless-stopped
 volumes:
   bot-data:
 networks:
   easypanel:
     external: true
-  bridge:
-    external: true
-    name: bridge
+  outbound:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.200.250.0/24
