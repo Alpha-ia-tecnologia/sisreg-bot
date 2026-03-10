@@ -10,9 +10,6 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
-    networks:
-      - bridge
-      - easypanel
     shm_size: "256mb"
     restart: unless-stopped
 volumes:
@@ -21,8 +18,5 @@ networks:
   default:
     external: true
     name: easypanel-sisreg-bot
-  bridge:
-    external: true
-    name: bridge
   easypanel:
     external: true
