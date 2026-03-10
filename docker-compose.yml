@@ -18,6 +18,9 @@ services:
 volumes:
   bot-data:
 networks:
+  default:
+    external: true
+    name: easypanel-sisreg-bot
   bridge:
     external: true
     name: bridge
