@@ -10,10 +10,14 @@ services:
     dns:
       - 8.8.8.8
       - 1.1.1.1
+    networks:
+      - easypanel
+      - outbound
     restart: unless-stopped
 volumes:
   bot-data:
 networks:
-  default:
+  easypanel:
     external: true
-    name: easypanel
+  outbound:
+    driver: bridge
