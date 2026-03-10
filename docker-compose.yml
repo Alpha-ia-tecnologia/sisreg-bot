@@ -12,12 +12,13 @@ services:
       - 1.1.1.1
     networks:
       - easypanel
-      - outbound
+      - bridge
     restart: unless-stopped
 volumes:
   bot-data:
 networks:
   easypanel:
     external: true
-  outbound:
-    driver: bridge
+  bridge:
+    external: true
+    name: bridge
