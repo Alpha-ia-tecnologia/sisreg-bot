@@ -13,6 +13,7 @@ services:
     networks:
       - default
       - easypanel
+    shm_size: "256mb"
     restart: unless-stopped
 volumes:
   bot-data:

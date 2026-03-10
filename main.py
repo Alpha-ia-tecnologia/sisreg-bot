@@ -74,7 +74,9 @@ def run_bot():
     step_header(1, "Autenticação no SISREG", "Conectando ao sistema de regulação...")
 
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        browser = p.chromium.launch(
+            args=["--no-sandbox", "--disable-setuid-sandbox"]
+        )
         try:
             page = browser.new_page()
 
