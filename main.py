@@ -80,8 +80,8 @@ def run_bot():
 
             state.set_detail("Acessando portal SISREG...")
             with spinner("Acessando portal SISREG..."):
-                page.goto("https://sisregiii.saude.gov.br/cgi-bin/index#")
-                page.wait_for_load_state("networkidle")
+                page.goto("https://sisregiii.saude.gov.br/cgi-bin/index#", timeout=60000)
+                page.wait_for_load_state("networkidle", timeout=60000)
             capture(page)
             state.add_log("done", "Portal carregado")
             step_done("Portal carregado")
