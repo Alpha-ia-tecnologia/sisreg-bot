@@ -11,17 +11,15 @@ services:
       - 8.8.8.8
       - 1.1.1.1
     networks:
-      - default
+      - bridge
       - easypanel
     shm_size: "256mb"
     restart: unless-stopped
 volumes:
   bot-data:
 networks:
-  default:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.200.250.0/24
+  bridge:
+    external: true
+    name: bridge
   easypanel:
     external: true

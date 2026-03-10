@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright/python:v1.49.1-noble
+FROM python:3.12-slim
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir uv && \
 COPY *.py ./
 COPY .env* ./
 
-VOLUME /app/data
+VOLUME /app/data 
 
 EXPOSE 8080
 
