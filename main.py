@@ -75,15 +75,15 @@ def run_bot():
 
     with sync_playwright() as p:
         browser = p.chromium.launch(
-            args=["--no-sandbox", "--disable-setuid-sandbox"]
+            args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage"]
         )
         try:
             page = browser.new_page()
 
             state.set_detail("Acessando portal SISREG...")
             with spinner("Acessando portal SISREG..."):
-                page.goto("https://sisregiii.saude.gov.br/cgi-bin/index#", timeout=60000)
-                page.wait_for_load_state("networkidle", timeout=60000)
+                page.goto("https://sisregiii.saude.gov.br/cgi-bin/index#", timeout=60000, wait_until="domcontentloaded")
+                page.wait_for_load_state("domcontentloaded", timeout=60000)
             capture(page)
             state.add_log("done", "Portal carregado")
             step_done("Portal carregado")
@@ -112,8 +112,8 @@ def run_bot():
 
             state.set_detail("Navegando para fila de espera...")
             with spinner("Navegando para fila de espera..."):
-                page.goto("https://sisregiii.saude.gov.br/cgi-bin/cons_fila_espera")
-                page.wait_for_load_state("networkidle", timeout=10000)
+                page.goto("https://sisregiii.saude.gov.br/cgi-bin/cons_fila_espera", timeout=60000, wait_until="domcontentloaded")
+                page.wait_for_load_state("domcontentloaded", timeout=60000)
             capture(page)
             state.add_log("done", "Página da fila de espera carregada")
             step_done("Página da fila de espera carregada")
@@ -197,7 +197,7 @@ def run_bot():
                     break
 
                 try:
-                    page.wait_for_load_state("networkidle", timeout=10000)
+                    page.wait_for_load_state("domcontentloaded", timeout=10000)
                 except Exception:
                     pass
         finally:
