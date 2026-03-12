@@ -130,9 +130,24 @@ def run_bot():
 
     state.set_detail("Conectando ao sistema de regulação...")
 
+    # ─── Configuração de proxy ────────────────────────────────────────────
+    proxy_url = os.getenv("PROXY_URL", "").strip()
+    proxy_username = os.getenv("PROXY_USERNAME", "").strip()
+    proxy_password = os.getenv("PROXY_PASSWORD", "").strip()
+
+    proxy_config = None
+    if proxy_url:
+        state.add_log("info", f"Proxy configurado: {proxy_url}")
+        proxy_config = {"server": proxy_url}
+        if proxy_username:
+            proxy_config["username"] = proxy_username
+            proxy_config["password"] = proxy_password
+    else:
+        state.add_log("info", "Sem proxy configurado — conexão direta")
+
     with sync_playwright() as p:
-        browser = p.chromium.launch(
-            args=[
+        launch_opts = {
+            "args": [
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-gpu",
@@ -143,7 +158,11 @@ def run_bot():
                 "--no-first-run",
                 "--ignore-certificate-errors",
             ]
-        )
+        }
+        if proxy_config:
+            launch_opts["proxy"] = proxy_config
+
+        browser = p.chromium.launch(**launch_opts)
         try:
             page = browser.new_page()
 
