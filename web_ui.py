@@ -1040,5 +1040,8 @@ def start_web_ui(port: int = 5050, bot_runner=None):
 
     thread = threading.Thread(target=run, daemon=True)
     thread.start()
-    webbrowser.open(f"http://localhost:{port}")
+    try:
+        webbrowser.open(f"http://localhost:{port}")
+    except Exception:
+        pass  # Docker/container: no browser available
     return thread
