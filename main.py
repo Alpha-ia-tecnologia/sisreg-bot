@@ -8,8 +8,36 @@ from message_sender import MessageSender
 from bot_state import state
 from db import init_db, clear_records, insert_records, get_all_records, create_execution, finish_execution
 
-NAV_TIMEOUT = int(os.getenv("NAV_TIMEOUT", "120000"))   # ms – default 2 min
+import socket
+import requests as req_lib
+
+NAV_TIMEOUT = int(os.getenv("NAV_TIMEOUT", "180000"))   # ms – default 3 min
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
+
+
+def check_connectivity(host, state_obj=None):
+    """Quick DNS + HTTP check — logs results to the dashboard."""
+    # 1. DNS resolution
+    try:
+        ip = socket.gethostbyname(host)
+        if state_obj:
+            state_obj.add_log("done", f"DNS OK: {host} → {ip}")
+    except socket.gaierror as e:
+        if state_obj:
+            state_obj.add_log("error", f"DNS FALHOU para {host}: {e}")
+        return False
+
+    # 2. HTTP connectivity (simple GET, 30s timeout)
+    try:
+        r = req_lib.get(f"https://{host}", timeout=30, verify=False)
+        if state_obj:
+            state_obj.add_log("done", f"HTTP OK: status {r.status_code}")
+    except Exception as e:
+        if state_obj:
+            state_obj.add_log("error", f"HTTP FALHOU para {host}: {e}")
+        return False
+
+    return True
 
 
 def goto_with_retry(page, url, state_obj=None):
@@ -93,8 +121,14 @@ def run_bot():
     )
 
     # ─── Etapa 1: Autenticação ────────────────────────────────────────────
-    state.set_step(1, "Autenticação no SISREG", "Conectando ao sistema de regulação...")
-    step_header(1, "Autenticação no SISREG", "Conectando ao sistema de regulação...")
+    state.set_step(1, "Autenticação no SISREG", "Verificando conectividade...")
+    step_header(1, "Autenticação no SISREG", "Verificando conectividade...")
+
+    # Diagnóstico de rede antes de tentar o Playwright
+    state.add_log("info", "Verificando DNS e conectividade com sisregiii.saude.gov.br...")
+    check_connectivity("sisregiii.saude.gov.br", state)
+
+    state.set_detail("Conectando ao sistema de regulação...")
 
     with sync_playwright() as p:
         browser = p.chromium.launch(
