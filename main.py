@@ -47,13 +47,6 @@ from console_ui import (
 
 load_dotenv()
 
-login_user = os.getenv("LOGIN_USER")
-login_password = os.getenv("LOGIN_PASSWORD")
-evolution_api_key = os.getenv("EVOLUTION_API_KEY")
-evolution_base_url = os.getenv("EVOLUTION_BASE_URL")
-instance_name = os.getenv("INSTANCE_NAME")
-current_date = datetime.datetime.now().strftime("%d/%m/%Y")
-
 
 def capture(pw_page):
     """Take a screenshot and push it to the dashboard."""
@@ -65,6 +58,14 @@ def capture(pw_page):
 
 def run_bot():
     """Main bot logic — runs in a separate thread triggered by the dashboard."""
+    # ─── Leitura das variáveis no momento da execução ─────────────────────
+    login_user = os.getenv("LOGIN_USER")
+    login_password = os.getenv("LOGIN_PASSWORD")
+    evolution_api_key = os.getenv("EVOLUTION_API_KEY")
+    evolution_base_url = os.getenv("EVOLUTION_BASE_URL")
+    instance_name = os.getenv("INSTANCE_NAME")
+    current_date = datetime.datetime.now().strftime("%d/%m/%Y")
+
     state.reset()
     bot_start_time = time.time()
     init_db()
