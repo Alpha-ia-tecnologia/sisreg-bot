@@ -7,6 +7,28 @@ import datetime
 from message_sender import MessageSender
 from bot_state import state
 from db import init_db, clear_records, insert_records, get_all_records, create_execution, finish_execution
+
+NAV_TIMEOUT = int(os.getenv("NAV_TIMEOUT", "120000"))   # ms – default 2 min
+MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
+
+
+def goto_with_retry(page, url, state_obj=None):
+    """Navigate to *url* with retry + exponential back-off."""
+    for attempt in range(1, MAX_RETRIES + 1):
+        timeout = NAV_TIMEOUT + (attempt - 1) * 60_000      # +60 s each retry
+        try:
+            if state_obj:
+                state_obj.add_log("info", f"Navegando para {url} (tentativa {attempt}/{MAX_RETRIES}, timeout {timeout // 1000}s)")
+            page.goto(url, timeout=timeout, wait_until="domcontentloaded")
+            page.wait_for_load_state("domcontentloaded", timeout=timeout)
+            return  # success
+        except Exception as exc:
+            if attempt == MAX_RETRIES:
+                raise  # give up after last attempt
+            wait_secs = 10 * attempt
+            if state_obj:
+                state_obj.add_log("error", f"Tentativa {attempt} falhou: {exc}. Aguardando {wait_secs}s…")
+            sleep(wait_secs)
 from web_ui import start_web_ui
 from console_ui import (
     show_banner,
@@ -75,15 +97,24 @@ def run_bot():
 
     with sync_playwright() as p:
         browser = p.chromium.launch(
-            args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu", "--disable-dev-shm-usage"]
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-gpu",
+                "--disable-dev-shm-usage",
+                "--disable-software-rasterizer",
+                "--disable-extensions",
+                "--dns-prefetch-disable",
+                "--no-first-run",
+                "--ignore-certificate-errors",
+            ]
         )
         try:
             page = browser.new_page()
 
             state.set_detail("Acessando portal SISREG...")
             with spinner("Acessando portal SISREG..."):
-                page.goto("https://sisregiii.saude.gov.br/cgi-bin/index#", timeout=60000, wait_until="domcontentloaded")
-                page.wait_for_load_state("domcontentloaded", timeout=60000)
+                goto_with_retry(page, "https://sisregiii.saude.gov.br/cgi-bin/index#", state)
             capture(page)
             state.add_log("done", "Portal carregado")
             step_done("Portal carregado")
@@ -112,8 +143,7 @@ def run_bot():
 
             state.set_detail("Navegando para fila de espera...")
             with spinner("Navegando para fila de espera..."):
-                page.goto("https://sisregiii.saude.gov.br/cgi-bin/cons_fila_espera", timeout=60000, wait_until="domcontentloaded")
-                page.wait_for_load_state("domcontentloaded", timeout=60000)
+                goto_with_retry(page, "https://sisregiii.saude.gov.br/cgi-bin/cons_fila_espera", state)
             capture(page)
             state.add_log("done", "Página da fila de espera carregada")
             step_done("Página da fila de espera carregada")

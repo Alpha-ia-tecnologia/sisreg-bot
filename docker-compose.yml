@@ -5,12 +5,15 @@ services:
       - "${PORT}:8080"
     env_file:
       - .env
+    environment:
+      - NAV_TIMEOUT=120000
+      - MAX_RETRIES=3
     volumes:
       - bot-data:/app/data
     dns:
       - 8.8.8.8
       - 1.1.1.1
-    shm_size: "256mb"
+    shm_size: "512mb"
     restart: unless-stopped
 volumes:
   bot-data:
