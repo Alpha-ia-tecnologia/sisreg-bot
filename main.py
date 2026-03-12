@@ -16,28 +16,16 @@ MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
 
 
 def check_connectivity(host, state_obj=None):
-    """Quick DNS + HTTP check — logs results to the dashboard."""
-    # 1. DNS resolution
+    """Quick DNS check — logs results to the dashboard."""
     try:
         ip = socket.gethostbyname(host)
         if state_obj:
             state_obj.add_log("done", f"DNS OK: {host} → {ip}")
+        return True
     except socket.gaierror as e:
         if state_obj:
             state_obj.add_log("error", f"DNS FALHOU para {host}: {e}")
         return False
-
-    # 2. HTTP connectivity (simple GET, 30s timeout)
-    try:
-        r = req_lib.get(f"https://{host}", timeout=30, verify=False)
-        if state_obj:
-            state_obj.add_log("done", f"HTTP OK: status {r.status_code}")
-    except Exception as e:
-        if state_obj:
-            state_obj.add_log("error", f"HTTP FALHOU para {host}: {e}")
-        return False
-
-    return True
 
 
 def goto_with_retry(page, url, state_obj=None):
